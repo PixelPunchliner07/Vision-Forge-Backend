@@ -42,10 +42,13 @@
 }
 
 
-
-    const loginUser = async (req, res) => {
+const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password } = req.body || {};
+        if (!email) {
+        return res.status(400).json({ error: 'Email is required!' });
+        }
+
         const user = await userModel.findOne({ email: email.trim().toLowerCase() });
         if (!user) {
             return res.json({ success: false, message: "User does not exist" });
@@ -55,6 +58,7 @@
         if (isMatched) {
             const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
             res.json({ success: true, token, user: { name: user.name } });
+
         } else {
             return res.json({ success: false, message: "Invalid Credentials" });
         }
